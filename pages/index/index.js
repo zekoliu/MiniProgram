@@ -20,7 +20,8 @@ Page({
   data: {
     imageName: '/images/sunny-bg.png',
     nowTemp: '12°',
-    nowWeather: '多云'
+    nowWeather: '多云',
+    hourlyWeather: []
   },
   onPullDownRefresh() {
     this.getNow(() => {
@@ -40,23 +41,43 @@ Page({
         'content-type': 'application/json' // 默认值
       },
       success: res => {
-        let result = res.data.result
-        let temp = result.now.temp
-        let weather = result.now.weather
-        console.log(temp, weather)
-        this.setData({
-          imageName: '/images/' + weather + '-bg.png',
-          nowTemp: temp + '°',
-          nowWeather: weatherMap[weather]
-        })
-        wx.setNavigationBarColor({
-          frontColor: '#000000',
-          backgroundColor: weatherColorMap[weather],
-        })
+        let result = res.data.result;
+        this.setNow(result);
+        this.setHourlyWeather(result);
         complete: () => {
-          callback && callback()
+          callback && callback();
         }
       }
+    })
+  },
+  setNow(result) {
+    let temp = result.now.temp;
+    let weather = result.now.weather;
+    this.setData({
+      imageName: '/images/' + weather + '-bg.png',
+      nowTemp: temp + '°',
+      nowWeather: weatherMap[weather]
+    })
+    wx.setNavigationBarColor({
+      frontColor: '#000000',
+      backgroundColor: weatherColorMap[weather],
+    })
+  },
+  setHourlyWeather(result) {
+    let nowHour = new Date().getHours;
+    let forecast = result.forecast
+    let hourlyWeather = [];
+    console.log(result)
+    for (let i = 0; i < 7; i++) {
+      hourlyWeather.push({
+        time: (i*3 + nowHour) % 24 + '时',
+        path: '/images/' + forecast[i].weather + '-icon.png',
+        temp: forecast[i].temp + '°'
+      })
+    }
+    hourlyWeather[0].time = '现在'
+    this.setData({
+      hourlyWeather: hourlyWeather
     })
   }
 })
