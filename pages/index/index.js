@@ -21,7 +21,9 @@ Page({
     imageName: '/images/sunny-bg.png',
     nowTemp: '12°',
     nowWeather: '多云',
-    hourlyWeather: []
+    hourlyWeather: [],
+    todayTemp: "",
+    todayDate: ""
   },
   onPullDownRefresh() {
     this.getNow(() => {
@@ -44,6 +46,7 @@ Page({
         let result = res.data.result;
         this.setNow(result);
         this.setHourlyWeather(result);
+        this.setToday(result);
         complete: () => {
           callback && callback();
         }
@@ -64,7 +67,7 @@ Page({
     })
   },
   setHourlyWeather(result) {
-    let nowHour = new Date().getHours;
+    let nowHour = new Date().getHours();
     let forecast = result.forecast
     let hourlyWeather = [];
     console.log(result)
@@ -78,6 +81,18 @@ Page({
     hourlyWeather[0].time = '现在'
     this.setData({
       hourlyWeather: hourlyWeather
+    })
+  },
+  setToday(result) {
+    let date = new Date()
+    this.setData({
+      todayTemp: `${result.today.minTemp}° - ${result.today.maxTemp}°`,
+      todayDate: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} 今天`
+    })
+  },
+  onTapDayWeather() {
+    wx.navigateTo({
+      url: '/pages/list/list',
     })
   }
 })
