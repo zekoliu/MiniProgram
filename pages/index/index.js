@@ -15,6 +15,7 @@ const weatherColorMap = {
   'snow': '#aae1fc'
 }
 
+const QQMapWX = require('../../libs/qqmap-wx-jssdk.js');
 
 Page({
   data: {
@@ -23,7 +24,8 @@ Page({
     nowWeather: '多云',
     hourlyWeather: [],
     todayTemp: "",
-    todayDate: ""
+    todayDate: "",
+    city: "上海市"
   },
   onPullDownRefresh() {
     this.getNow(() => {
@@ -31,13 +33,17 @@ Page({
     })
   },
   onLoad() {
+    this.qqmapsdk = new QQMapWX({
+      key: 'XP3BZ-VBE3S-HNWOO-6OBX3-64QCS-HPFKU'
+    })
+    console.log("jump here")
     this.getNow()
   },
   getNow(callback) {
     wx.request({
       url: 'https://test-miniprogram.com/api/weather/now',
       data: {
-        city: '广州市'
+        city: '上海市'
       },
       header: {
         'content-type': 'application/json' // 默认值
@@ -70,7 +76,6 @@ Page({
     let nowHour = new Date().getHours();
     let forecast = result.forecast
     let hourlyWeather = [];
-    console.log(result)
     for (let i = 0; i < 7; i++) {
       hourlyWeather.push({
         time: (i*3 + nowHour) % 24 + '时',
@@ -94,5 +99,24 @@ Page({
     wx.navigateTo({
       url: '/pages/list/list',
     })
-  }
+  },
+  onTapLocation() {
+    console.log("jump here 1")
+    wx.getLocation({
+      success: res => {
+        console.log("jump here 2")
+        this.qqmapsdk.reverseGeocoder({
+          location: {
+            latitude: res.latitude,
+            longitude: res.longitude
+          },
+          success: res => {
+            console.log("jump here 3")
+            let city = res.result.address_component.city
+            console.log(city)
+          }
+        })
+      }
+    })
+  },
 })
